@@ -1,0 +1,815 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>График отпусков 2027</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: одна колонка администратора. Сверху правила и сотрудники (ввод), ниже результат: годовая шкала, итоги, периоды. */
+:root {
+  --font: "Golos Text", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --bg: #f3f5f8;
+  --surface: #fbfcfd;
+  --field: #ffffff;
+  --ink: #0e1620;
+  --ink2: #4a5563;
+  --ink3: #5f6b78;
+  --line: #e1e5eb;
+  --line2: #c8cfd8;
+  --btn: #12304b;
+  --btn-ink: #ffffff;
+  --focus: #2a78d6;
+  --hatch: rgba(14, 22, 32, 0.5);
+  --neutral-bar: #9aa6b4;
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100;
+  --s5: #e87ba4; --s6: #008300; --s7: #4a3aa7; --s8: #e34948;
+  --ok: #006300; --ok-bg: #e5f2e5;
+  --bad: #b02a2a; --bad-bg: #fbe9e9;
+  --warn: #7a5200; --warn-bg: #fff2d1;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1218; --surface: #161c24; --field: #0f151c;
+    --ink: #f2f5f8; --ink2: #c3c9d1; --ink3: #9aa4b0;
+    --line: #262e38; --line2: #38424e;
+    --btn: #dce8f4; --btn-ink: #0e1620; --focus: #3987e5;
+    --hatch: rgba(255, 255, 255, 0.55); --neutral-bar: #566272;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+    --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767;
+    --ok: #4fd04f; --ok-bg: #12301a;
+    --bad: #ff8a8a; --bad-bg: #3a1c1c;
+    --warn: #f5c04a; --warn-bg: #33270c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1218; --surface: #161c24; --field: #0f151c;
+  --ink: #f2f5f8; --ink2: #c3c9d1; --ink3: #9aa4b0;
+  --line: #262e38; --line2: #38424e;
+  --btn: #dce8f4; --btn-ink: #0e1620; --focus: #3987e5;
+  --hatch: rgba(255, 255, 255, 0.55); --neutral-bar: #566272;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+  --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767;
+  --ok: #4fd04f; --ok-bg: #12301a;
+  --bad: #ff8a8a; --bad-bg: #3a1c1c;
+  --warn: #f5c04a; --warn-bg: #33270c;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.45;
+  padding-inline: 16px;
+  padding-block: 20px 40px;
+}
+.app { max-width: 1120px; margin-inline: auto; display: flex; flex-direction: column; gap: 16px; }
+h1, h2, h3, p { margin: 0; }
+h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
+h2 { font-size: 1.05rem; font-weight: 600; text-wrap: balance; }
+.eyebrow { font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink3); margin-bottom: 4px; }
+.year { font-variant-numeric: tabular-nums; color: var(--ink2); font-weight: 500; }
+.top { display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: space-between; align-items: flex-end; }
+.top-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.status { font-size: 0.8rem; color: var(--ink3); min-width: 0; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.panel-head { display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: space-between; align-items: baseline; }
+.hint { color: var(--ink3); font-size: 0.82rem; max-width: 70ch; }
+fieldset.plain { border: 0; margin: 0; padding: 0; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+.banner { background: var(--warn-bg); color: var(--warn); border-radius: 8px; padding: 10px 14px; font-size: 0.88rem; }
+.banner[hidden] { display: none; }
+.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(11.5rem, 1fr)); gap: 12px 16px; }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field label, .lbl { font-size: 0.78rem; color: var(--ink2); font-weight: 500; }
+.field .sub { font-size: 0.74rem; color: var(--ink3); }
+input, select, textarea, button { font: inherit; color: inherit; }
+input[type="text"], input[type="number"], input[type="date"], select, textarea {
+  background: var(--field); border: 1px solid var(--line2); border-radius: 6px; padding: 6px 8px; width: 100%; min-width: 0; min-height: 34px;
+}
+textarea { resize: vertical; font-size: 0.85rem; line-height: 1.5; }
+input:disabled, select:disabled, textarea:disabled { opacity: 0.65; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+button { cursor: pointer; border-radius: 6px; border: 1px solid var(--line2); background: transparent; padding: 6px 12px; min-height: 34px; }
+button:hover:not(:disabled) { background: var(--line); }
+button:disabled { opacity: 0.55; cursor: default; }
+button.primary { background: var(--btn); color: var(--btn-ink); border-color: var(--btn); font-weight: 500; }
+button.primary:hover:not(:disabled) { background: var(--btn); filter: brightness(1.12); }
+button.quiet { border-color: transparent; color: var(--ink2); }
+button.x { padding: 2px 8px; min-height: 28px; }
+.row-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.tw { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th { text-align: left; font-size: 0.75rem; font-weight: 600; color: var(--ink2); padding: 6px 10px; border-bottom: 1px solid var(--line2); white-space: nowrap; }
+td { padding: 6px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+tr.grp td { border-top: 1px solid var(--line2); }
+td.num, th.num { text-align: right; }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 8px; background: var(--c, var(--s1)); flex: none; }
+.who { display: inline-flex; align-items: center; white-space: nowrap; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; gap: 6px; align-items: baseline; border-radius: 999px; padding: 2px 10px; font-size: 0.78rem; line-height: 1.5; }
+.chip b { font-weight: 700; }
+.chip.ok { background: var(--ok-bg); color: var(--ok); }
+.chip.warn { background: var(--warn-bg); color: var(--warn); }
+.chip.err { background: var(--bad-bg); color: var(--bad); }
+.summary { display: flex; flex-wrap: wrap; gap: 6px 20px; color: var(--ink2); font-size: 0.88rem; }
+.summary strong { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* Годовая шкала */
+.gscroll { overflow-x: auto; }
+.gantt { min-width: 760px; display: flex; flex-direction: column; }
+.g-row { display: grid; grid-template-columns: 9.5rem 1fr; align-items: center; }
+.g-label { font-size: 0.85rem; padding-right: 10px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.g-plot { position: relative; height: 34px; border-bottom: 1px solid var(--line); }
+.g-head .g-plot { height: 24px; border-bottom: 1px solid var(--line2); }
+.mline { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--line); }
+.mname { position: absolute; top: 4px; font-size: 0.72rem; color: var(--ink3); padding-left: 4px; }
+.bar {
+  position: absolute; top: 8px; height: 18px; min-width: 4px; padding: 0; border: 0; border-radius: 4px;
+  background: var(--c, var(--s1)); overflow: hidden; display: block;
+}
+.bar:hover:not(:disabled) { background: var(--c, var(--s1)); filter: brightness(1.08); }
+.bar .eco {
+  position: absolute; top: 0; bottom: 0; right: 0;
+  background-image: repeating-linear-gradient(45deg, var(--hatch) 0 2px, transparent 2px 6px);
+  border-left: 2px solid var(--surface);
+}
+.g-load .g-plot { height: 86px; border-bottom: 1px solid var(--line2); }
+.lcol { position: absolute; bottom: 0; top: 0; }
+.lbar { position: absolute; left: 3px; right: 3px; bottom: 0; background: var(--neutral-bar); border-radius: 4px 4px 0 0; }
+.lval { position: absolute; left: 0; right: 0; text-align: center; font-size: 0.72rem; color: var(--ink); font-variant-numeric: tabular-nums; }
+.g-note { font-size: 0.78rem; color: var(--ink3); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.8rem; color: var(--ink2); align-items: center; }
+.hatch-key { display: inline-block; width: 22px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; background: var(--s1); position: relative; overflow: hidden; }
+.hatch-key::after { content: ""; position: absolute; inset: 0; background-image: repeating-linear-gradient(45deg, var(--hatch) 0 2px, transparent 2px 6px); }
+#tip {
+  position: fixed; z-index: 20; pointer-events: none; background: var(--btn); color: var(--btn-ink);
+  padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; line-height: 1.4; max-width: 260px; box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+}
+#tip[hidden] { display: none; }
+.notes { font-size: 0.82rem; color: var(--ink2); display: flex; flex-direction: column; gap: 6px; }
+.notes p { max-width: 90ch; }
+.mdate { min-width: 9.5rem; }
+@media (max-width: 520px) {
+  h1 { font-size: 1.35rem; }
+  .g-row { grid-template-columns: 7rem 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div>
+      <p class="eyebrow">АО «Казахтелеком» · ежегодные оплачиваемые отпуска</p>
+      <h1>График отпусков <span class="year" id="yearTag">2027</span></h1>
+    </div>
+    <div class="top-actions">
+      <span class="status" id="saveStatus" role="status"></span>
+      <button class="primary" id="btnCsv" type="button">Скачать CSV</button>
+    </div>
+  </header>
+
+  <div class="banner" id="exampleBanner">Сейчас показан пример: даты рождения условные. Внесите реальные данные сотрудников, график пересчитается сразу.</div>
+
+  <fieldset class="plain" id="editable">
+    <section class="panel" aria-labelledby="h-rules">
+      <div class="panel-head">
+        <h2 id="h-rules">Правила расчёта</h2>
+        <p class="hint">Меняйте значения здесь, график и проверки обновляются автоматически.</p>
+      </div>
+      <div class="fields">
+        <div class="field"><label for="s-year">Год отпусков</label><input id="s-year" type="number" min="2000" max="2100" step="1"></div>
+        <div class="field"><label for="s-total">Основной отпуск, календарных дней</label><input id="s-total" type="number" min="1" max="120" step="1"></div>
+        <div class="field"><label for="s-minFirst">Минимум первой части, дней</label><input id="s-minFirst" type="number" min="1" max="60" step="1"></div>
+        <div class="field"><label for="s-part1">Первая часть по умолчанию, дней</label><input id="s-part1" type="number" min="1" max="120" step="1"><span class="sub">Для сотрудника можно задать свою</span></div>
+        <div class="field"><label for="s-maxConc">Одновременно в отпуске, не более</label><input id="s-maxConc" type="number" min="1" max="50" step="1"></div>
+        <div class="field"><label for="s-ecoBefore">Эко-дни: родился до года</label><input id="s-ecoBefore" type="number" min="1900" max="2100" step="1"><span class="sub">Год рождения строго меньше этого</span></div>
+        <div class="field"><label for="s-ecoDays">Эко-дни по умолчанию, дней</label><input id="s-ecoDays" type="number" min="0" max="60" step="1"><span class="sub">Зависит от зоны проживания, уточните в кадрах</span></div>
+        <div class="field"><label for="s-ecoInside">Эко-дни считаются</label>
+          <select id="s-ecoInside"><option value="0">сверх основных дней</option><option value="1">внутри основного отпуска</option></select></div>
+        <div class="field"><label for="s-ecoMode">Эко-дни присоединяются</label>
+          <select id="s-ecoMode"><option value="p2">ко второй части</option><option value="p1">к первой части</option><option value="sep">отдельной частью</option></select></div>
+      </div>
+      <div class="field">
+        <label for="s-holidays">Праздничные дни года (дд.мм название, по одному в строке)</label>
+        <textarea id="s-holidays" rows="6" spellcheck="false"></textarea>
+        <span class="sub">Праздники не входят в число дней отпуска. Если праздник на выходной переносится на другой день, добавьте дату переноса. Курбан айт и переносы на 2027 год уточняйте по постановлению Правительства.</span>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="h-emps">
+      <div class="panel-head">
+        <h2 id="h-emps">Сотрудники</h2>
+        <p class="hint">Достаточно имени и даты рождения. Поля «Часть 1» и «Эко-дни» заполняйте только если они отличаются от правил выше.</p>
+      </div>
+      <div class="tw">
+        <table>
+          <thead><tr>
+            <th>№</th><th>Сотрудник</th><th>Дата рождения</th><th>Часть 1, дней</th><th>Эко-дни (вручную)</th><th>Эко-дни (расчёт)</th><th></th>
+          </tr></thead>
+          <tbody id="empBody"></tbody>
+        </table>
+      </div>
+      <div class="row-actions">
+        <button type="button" id="btnAdd">Добавить сотрудника</button>
+        <button type="button" class="quiet" id="btnClearManual">Сбросить ручные даты</button>
+        <button type="button" class="quiet" id="btnReset">Вернуть пример</button>
+      </div>
+    </section>
+  </fieldset>
+
+  <section class="panel" aria-labelledby="h-gantt">
+    <div class="panel-head">
+      <h2 id="h-gantt">Годовой график</h2>
+      <div class="chips" id="overallChip"></div>
+    </div>
+    <div class="summary" id="summary"></div>
+    <div class="gscroll"><div class="gantt" id="gantt"></div></div>
+    <div class="legend" id="legend"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-totals">
+    <h2 id="h-totals">Итоги по сотрудникам</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Сотрудник</th><th class="num">Год рожд.</th><th class="num">Часть 1</th><th class="num">Часть 2</th><th class="num">Эко-дни</th><th class="num">Всего дней</th><th>Проверка</th></tr></thead>
+      <tbody id="totBody"></tbody>
+    </table></div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-periods">
+    <div class="panel-head">
+      <h2 id="h-periods">Периоды отпусков</h2>
+      <p class="hint">Даты подобраны автоматически. Чтобы закрепить свою дату начала, выберите её в последнем столбце, остальные периоды перестроятся вокруг неё.</p>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th>Сотрудник</th><th>Часть</th><th>Начало</th><th>Конец</th><th class="num">Дней отпуска</th><th class="num">В т.ч. эко</th><th class="num">Праздников в периоде</th><th>Начало вручную</th></tr></thead>
+      <tbody id="perBody"></tbody>
+    </table></div>
+  </section>
+
+  <section class="panel notes" aria-labelledby="h-law">
+    <h2 id="h-law">На чём основан расчёт</h2>
+    <p>Отпуск считается в календарных днях без праздничных дней, которые попадают в период (ст. 90 ТК РК). Поэтому конец периода сдвигается на число праздников внутри него.</p>
+    <p>Отпуск делится на части по соглашению работника и работодателя, одна из частей не меньше 14 календарных дней (ст. 92 ТК РК). Не забудьте оформить согласие сотрудника.</p>
+    <p>Дополнительный экологический отпуск для проживающих в зонах Семипалатинского полигона: 14, 12, 10, 7 или 5 дней в зависимости от зоны (ст. 13 Закона РК № 1787-XII от 18.12.1992). Условие «родился до 1990 года» и число дней настраиваются в правилах расчёта. Сверьте их с действующей редакцией закона и внутренними документами Казахтелекома.</p>
+    <p>Равномерность: части отпусков разложены по году так, чтобы у каждого сотрудника они шли с разрывом примерно в полгода, а у всех вместе отпуска не скапливались в одних месяцах.</p>
+  </section>
+</div>
+<div id="tip" hidden></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var DAY = 86400000;
+  var MONTHS = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+  var MONTHS_FULL = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+  var LS_KEY = 'kt-vacation-plan-2027';
+  var DEFAULT_HOLIDAYS = [
+    '01.01 Новый год', '02.01 Новый год', '07.01 Рождество Христово',
+    '08.03 Международный женский день', '21.03 Наурыз мейрамы', '22.03 Наурыз мейрамы', '23.03 Наурыз мейрамы',
+    '01.05 Праздник единства народов Казахстана', '07.05 День защитника Отечества', '09.05 День Победы',
+    '17.05 Курбан айт (ориентировочно)', '06.07 День Столицы', '30.08 День Конституции',
+    '25.10 День Республики', '16.12 День Независимости', '17.12 День Независимости'
+  ].join('\n');
+
+  function defaultState() {
+    return {
+      v: 1,
+      example: true,
+      settings: { year: 2027, total: 30, minFirst: 14, part1: 14, maxConc: 2, ecoBefore: 1990, ecoDays: 7, ecoInside: false, ecoMode: 'p2', holidays: DEFAULT_HOLIDAYS },
+      employees: [
+        { id: 'e1', name: 'Сотрудник 1', birth: '1985-03-12', p1: '', eco: '', manual: {} },
+        { id: 'e2', name: 'Сотрудник 2', birth: '1992-07-04', p1: '', eco: '', manual: {} },
+        { id: 'e3', name: 'Сотрудник 3', birth: '1988-11-20', p1: '', eco: '', manual: {} },
+        { id: 'e4', name: 'Сотрудник 4', birth: '1995-01-15', p1: '', eco: '', manual: {} },
+        { id: 'e5', name: 'Сотрудник 5', birth: '1989-12-31', p1: '', eco: '', manual: {} }
+      ]
+    };
+  }
+
+  var state = defaultState();
+  var readOnly = false;
+  var dbDoc = null;
+  var downloads = null;
+
+  /* ---------- даты ---------- */
+  function dn(y, m, d) { return Math.round(Date.UTC(y, m - 1, d) / DAY); }
+  function dt(n) { return new Date(n * DAY); }
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function fmt(n) { var x = dt(n); return pad(x.getUTCDate()) + '.' + pad(x.getUTCMonth() + 1) + '.' + x.getUTCFullYear(); }
+  function iso(n) { var x = dt(n); return x.getUTCFullYear() + '-' + pad(x.getUTCMonth() + 1) + '-' + pad(x.getUTCDate()); }
+  function fromIso(s) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? dn(+m[1], +m[2], +m[3]) : null; }
+  function dow(n) { return (dt(n).getUTCDay() + 6) % 7; }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function num(v, fallback) { var n = parseFloat(v); return isFinite(n) ? n : fallback; }
+
+  function parseHolidays(text, year) {
+    var map = {};
+    String(text || '').split(/\r?\n/).forEach(function (line) {
+      var m = /^\s*(\d{1,2})\.(\d{1,2})(?:\.(\d{4}))?\s*(.*)$/.exec(line);
+      if (!m) return;
+      var d = dn(m[3] ? +m[3] : year, +m[2], +m[1]);
+      map[d] = m[4] || 'Праздничный день';
+    });
+    return map;
+  }
+
+  /* ---------- расчёт ---------- */
+  function compute(st) {
+    var S = st.settings;
+    var year = Math.round(num(S.year, 2027));
+    var ys = dn(year, 1, 1), ye = dn(year, 12, 31), ylen = ye - ys + 1;
+    var H = parseHolidays(S.holidays, year);
+    var total = Math.round(num(S.total, 30));
+    var minFirst = Math.round(num(S.minFirst, 14));
+    var part1Def = Math.round(num(S.part1, 14));
+    var maxC = Math.max(1, Math.round(num(S.maxConc, 2)));
+    var ecoBefore = Math.round(num(S.ecoBefore, 1990));
+    var ecoDef = Math.max(0, Math.round(num(S.ecoDays, 0)));
+    var ecoInside = !!S.ecoInside;
+    var ecoMode = S.ecoMode || 'p2';
+
+    function isWork(d) { return dow(d) < 5 && !H[d]; }
+    function nextWork(d) { var g = 0; while (!isWork(d) && g < 30) { d++; g++; } return d; }
+    function endOf(start, days) {
+      var c = 0, d = start;
+      for (var g = 0; g < 500; g++) { if (!H[d]) { c++; if (c >= days) return d; } d++; }
+      return d;
+    }
+    function holidaysIn(a, b) { var c = 0; for (var d = a; d <= b; d++) if (H[d]) c++; return c; }
+
+    var N = st.employees.length;
+    var issues = {};
+    function addIssue(ei, lvl, text) { (issues[ei] = issues[ei] || []).push({ lvl: lvl, text: text }); }
+
+    var emps = st.employees.map(function (e, i) {
+      var by = /^\d{4}/.test(e.birth || '') ? +String(e.birth).slice(0, 4) : null;
+      var manualEco = e.eco !== '' && e.eco != null && isFinite(+e.eco);
+      var eligible = by != null && by < ecoBefore;
+      var eco = manualEco ? Math.max(0, Math.round(+e.eco)) : (eligible ? ecoDef : 0);
+      var regular = ecoInside ? total - eco : total;
+      var p1 = (e.p1 !== '' && e.p1 != null && isFinite(+e.p1)) ? Math.round(+e.p1) : part1Def;
+      var p2 = regular - p1;
+      var parts = [{ k: 'p1', label: 'Часть 1', reg: p1, eco: 0 }, { k: 'p2', label: 'Часть 2', reg: p2, eco: 0 }];
+      if (eco > 0) {
+        if (ecoMode === 'p1') parts[0].eco = eco;
+        else if (ecoMode === 'p2') parts[1].eco = eco;
+        else parts.push({ k: 'eco', label: 'Эко-часть', reg: 0, eco: eco });
+      }
+      parts.forEach(function (p) { p.days = p.reg + p.eco; });
+
+      if (by == null) addIssue(i, 'warn', 'Не указана дата рождения: эко-дни не рассчитаны');
+      if (p1 < minFirst) addIssue(i, 'err', 'Часть 1 меньше ' + minFirst + ' дн.');
+      if (p2 < 1) addIssue(i, 'err', 'Основные дни не делятся на две части: уменьшите часть 1');
+      if (eligible && eco === 0) addIssue(i, 'warn', 'Родился до ' + ecoBefore + ', но эко-дни равны 0');
+      if (ecoInside && eco > total) addIssue(i, 'err', 'Эко-дни больше основного отпуска');
+      return { e: e, i: i, by: by, eco: eco, eligible: eligible, p1: p1, p2: p2, regular: regular, parts: parts.filter(function (p) { return p.days > 0; }), allParts: parts, color: 's' + ((i % 8) + 1) };
+    });
+
+    var items = [];
+    emps.forEach(function (E) {
+      E.parts.forEach(function (p, k) {
+        var it = { E: E, p: p, ei: E.i, k: k, m: E.parts.length, days: p.days };
+        var f = ((E.i + 0.5) / Math.max(1, N) + k) / E.parts.length;
+        it.target = Math.round(ys + f * ylen - p.days / 2);
+        var manual = fromIso(E.e.manual && E.e.manual[p.k]);
+        it.fixed = manual != null ? manual : null;
+        items.push(it);
+      });
+    });
+
+    var placed = [];
+    function fits(it, start, end) {
+      if (start < ys || end > ye) return false;
+      for (var a = 0; a < placed.length; a++) {
+        var q = placed[a];
+        if (q.ei === it.ei && !(end < q.start || start > q.end)) return false;
+      }
+      for (var d = start; d <= end; d++) {
+        var c = 1;
+        for (var b = 0; b < placed.length; b++) if (d >= placed[b].start && d <= placed[b].end) c++;
+        if (c > maxC) return false;
+      }
+      return true;
+    }
+    items.filter(function (it) { return it.fixed != null; }).forEach(function (it) {
+      it.start = it.fixed; it.end = endOf(it.start, it.days); it.isFixed = true; placed.push(it);
+    });
+    var offsets = [0];
+    for (var k = 1; k <= 16; k++) { offsets.push(k * 7); offsets.push(-k * 7); }
+    items.filter(function (it) { return it.fixed == null; })
+      .sort(function (a, b) { return a.target - b.target || a.ei - b.ei; })
+      .forEach(function (it) {
+        var s = it.target, w = dow(s);
+        s = w <= 3 ? s - w : s + 7 - w;
+        var ok = false;
+        for (var oi = 0; oi < offsets.length; oi++) {
+          var cand = nextWork(s + offsets[oi]);
+          var end = endOf(cand, it.days);
+          if (fits(it, cand, end)) { it.start = cand; it.end = end; ok = true; break; }
+        }
+        if (!ok) { it.start = nextWork(s); it.end = endOf(it.start, it.days); it.unplaced = true; }
+        placed.push(it);
+      });
+
+    items.forEach(function (it) {
+      it.cal = it.end - it.start + 1;
+      it.hol = holidaysIn(it.start, it.end);
+      it.ecoFrom = null;
+      if (it.p.eco > 0) {
+        if (it.p.k === 'eco') it.ecoFrom = it.start;
+        else it.ecoFrom = endOf(it.start, it.p.reg) + 1;
+      }
+    });
+
+    /* нагрузка по дням и проверки */
+    var cover = new Array(ylen + 1).fill(0);
+    items.forEach(function (it) { for (var d = it.start; d <= it.end; d++) { if (d >= ys && d <= ye) cover[d - ys]++; } });
+    var peak = 0; for (var c = 0; c < ylen; c++) if (cover[c] > peak) peak = cover[c];
+    var monthly = []; for (var mm = 0; mm < 12; mm++) monthly.push(0);
+    for (var dd = 0; dd < ylen; dd++) { if (cover[dd]) monthly[dt(ys + dd).getUTCMonth()] += cover[dd]; }
+
+    items.forEach(function (it) {
+      var label = it.p.label;
+      if (it.unplaced) addIssue(it.ei, 'err', label + ': не удалось подобрать даты в рамках лимита одновременных отпусков');
+      if (it.start < ys || it.end > ye) addIssue(it.ei, 'err', label + ': период выходит за пределы ' + year + ' года');
+      var mx = 0;
+      for (var d = it.start; d <= it.end; d++) { if (d >= ys && d <= ye && cover[d - ys] > mx) mx = cover[d - ys]; }
+      if (mx > maxC) addIssue(it.ei, 'err', label + ': одновременно в отпуске ' + mx + ' чел. при лимите ' + maxC);
+      if (it.isFixed && !isWork(it.start)) addIssue(it.ei, 'warn', label + ': выбранное начало приходится на выходной или праздник');
+    });
+    for (var a = 0; a < items.length; a++) for (var b = a + 1; b < items.length; b++) {
+      if (items[a].ei === items[b].ei && !(items[a].end < items[b].start || items[a].start > items[b].end)) {
+        addIssue(items[a].ei, 'err', items[a].p.label + ' и ' + items[b].p.label + ' пересекаются');
+      }
+    }
+
+    items.sort(function (a, b) { return a.ei - b.ei || a.start - b.start; });
+    return { year: year, ys: ys, ye: ye, ylen: ylen, H: H, emps: emps, items: items, issues: issues, monthly: monthly, peak: peak, maxC: maxC, total: total, minFirst: minFirst, ecoBefore: ecoBefore };
+  }
+
+  /* ---------- отрисовка ---------- */
+  var $ = function (id) { return document.getElementById(id); };
+  var R = null;
+
+  function chip(kind, text) {
+    var icon = kind === 'ok' ? '✓' : '!';
+    return '<span class="chip ' + kind + '"><b aria-hidden="true">' + icon + '</b><span>' + esc(text) + '</span></span>';
+  }
+
+  function renderGantt(r) {
+    var h = '';
+    var plot = function (inner, cls) { return '<div class="g-plot' + (cls ? ' ' + cls : '') + '">' + inner + '</div>'; };
+    var lines = '', heads = '';
+    for (var m = 0; m < 12; m++) {
+      var ms = dn(r.year, m + 1, 1), me = dn(r.year, m + 2, 1);
+      var left = (ms - r.ys) / r.ylen * 100;
+      lines += '<span class="mline" style="left:' + left.toFixed(3) + '%"></span>';
+      heads += '<span class="mline" style="left:' + left.toFixed(3) + '%"></span><span class="mname" style="left:' + left.toFixed(3) + '%">' + MONTHS[m] + '</span>';
+    }
+    h += '<div class="g-row g-head"><div class="g-label"></div>' + plot(heads) + '</div>';
+    r.emps.forEach(function (E) {
+      var bars = '';
+      r.items.filter(function (it) { return it.ei === E.i; }).forEach(function (it, idx) {
+        var left = (it.start - r.ys) / r.ylen * 100;
+        var width = Math.max(0.5, it.cal / r.ylen * 100);
+        var eco = '';
+        if (it.ecoFrom != null) {
+          var ew = Math.max(0, (it.end - it.ecoFrom + 1) / it.cal * 100);
+          eco = '<span class="eco" style="width:' + ew.toFixed(2) + '%"></span>';
+        }
+        var tip = esc(E.e.name) + ' · ' + esc(it.p.label) + '<br>' + fmt(it.start) + ' – ' + fmt(it.end) + '<br>Дней отпуска: ' + it.days + (it.p.eco ? ' (в т.ч. эко ' + it.p.eco + ')' : '') + (it.hol ? '<br>Праздников в периоде: ' + it.hol : '');
+        var aria = E.e.name + ', ' + it.p.label + ', ' + fmt(it.start) + ' – ' + fmt(it.end) + ', ' + it.days + ' дн.';
+        bars += '<button type="button" class="bar" style="--c:var(--' + E.color + ');left:' + left.toFixed(3) + '%;width:' + width.toFixed(3) + '%" data-tip="' + tip.replace(/"/g, '&quot;') + '" aria-label="' + esc(aria) + '">' + eco + '</button>';
+      });
+      h += '<div class="g-row"><div class="g-label" title="' + esc(E.e.name) + '"><span class="who"><i class="sw" style="--c:var(--' + E.color + ')"></i>' + esc(E.e.name) + '</span></div>' + plot(lines + bars) + '</div>';
+    });
+    /* нагрузка по месяцам */
+    var maxV = Math.max.apply(null, r.monthly.concat([1]));
+    var minV = Math.min.apply(null, r.monthly);
+    var cols = '';
+    for (var m2 = 0; m2 < 12; m2++) {
+      var s2 = dn(r.year, m2 + 1, 1), e2 = dn(r.year, m2 + 2, 1);
+      var l2 = (s2 - r.ys) / r.ylen * 100, w2 = (e2 - s2) / r.ylen * 100;
+      var v = r.monthly[m2];
+      var hh = v / maxV * 62;
+      var showVal = (v === maxV || v === minV);
+      var tip2 = MONTHS_FULL[m2] + ': ' + v + ' чел.-дн. отпуска';
+      cols += '<span class="lcol" style="left:' + l2.toFixed(3) + '%;width:' + w2.toFixed(3) + '%" data-tip="' + esc(tip2) + '" aria-label="' + esc(tip2) + '">' +
+        '<span class="lbar" style="height:' + hh.toFixed(1) + 'px"></span>' +
+        (showVal ? '<span class="lval" style="bottom:' + (hh + 3).toFixed(1) + 'px">' + v + '</span>' : '') + '</span>';
+    }
+    h += '<div class="g-row g-load"><div class="g-label" style="white-space:normal;line-height:1.25;color:var(--ink2)">Отпускных дней по месяцам</div>' + plot(lines + cols) + '</div>';
+    $('gantt').innerHTML = h;
+
+    var leg = '';
+    leg += '<span><span class="hatch-key"></span>Экологические дни</span>';
+    leg += '<span class="g-note">Наведите на период, чтобы увидеть даты. Все даты также в таблицах ниже.</span>';
+    $('legend').innerHTML = leg;
+  }
+
+  function renderTables(r) {
+    var allIssues = 0, errs = 0;
+    var tb = '';
+    r.emps.forEach(function (E) {
+      var iss = r.issues[E.i] || [];
+      iss.forEach(function (x) { allIssues++; if (x.lvl === 'err') errs++; });
+      var check = iss.length
+        ? '<div class="chips">' + iss.map(function (x) { return chip(x.lvl, x.text); }).join('') + '</div>'
+        : '<div class="chips">' + chip('ok', 'Все проверки пройдены') + '</div>';
+      var P = E.allParts;
+      var c1 = P[0].reg + (P[0].eco ? ' + ' + P[0].eco + ' эко' : '');
+      var c2 = P[1].reg + (P[1].eco ? ' + ' + P[1].eco + ' эко' : '');
+      var ecoCell = E.eco > 0 ? (E.eco + (E.parts.some(function (p) { return p.k === 'eco'; }) ? ' (отдельно)' : '')) : '—';
+      var sum = E.parts.reduce(function (s, p) { return s + p.days; }, 0);
+      tb += '<tr><td><span class="who"><i class="sw" style="--c:var(--' + E.color + ')"></i>' + esc(E.e.name) + '</span></td>' +
+        '<td class="num">' + (E.by != null ? E.by : '—') + '</td><td class="num">' + c1 + '</td><td class="num">' + c2 + '</td><td class="num">' + ecoCell + '</td><td class="num"><strong>' + sum + '</strong></td><td>' + check + '</td></tr>';
+    });
+    $('totBody').innerHTML = tb;
+
+    var pb = '', lastEi = -1;
+    r.items.forEach(function (it) {
+      var E = it.E, key = it.p.k;
+      var mv = (E.e.manual && E.e.manual[key]) || '';
+      pb += '<tr' + (it.ei !== lastEi ? ' class="grp"' : '') + '><td>' + (it.ei !== lastEi ? '<span class="who"><i class="sw" style="--c:var(--' + E.color + ')"></i>' + esc(E.e.name) + '</span>' : '') + '</td>' +
+        '<td>' + esc(it.p.label) + '</td><td>' + fmt(it.start) + '</td><td>' + fmt(it.end) + '</td>' +
+        '<td class="num"><strong>' + it.days + '</strong></td><td class="num">' + (it.p.eco || '—') + '</td><td class="num">' + (it.hol || '—') + '</td>' +
+        '<td><div class="row-actions" style="flex-wrap:nowrap;align-items:center"><input class="mdate" type="date" data-id="' + esc(E.e.id) + '" data-k="' + key + '" value="' + esc(mv) + '" min="' + iso(r.ys) + '" max="' + iso(r.ye) + '" aria-label="Начало вручную: ' + esc(E.e.name) + ', ' + esc(it.p.label) + '"' + (readOnly ? ' disabled' : '') + '>' +
+        (mv ? '<button type="button" class="x quiet" data-clear="1" data-id="' + esc(E.e.id) + '" data-k="' + key + '" title="Снять ручную дату"' + (readOnly ? ' disabled' : '') + '>Снять</button>' : '') + '</div></td></tr>';
+      lastEi = it.ei;
+    });
+    $('perBody').innerHTML = pb;
+
+    var chipsHtml = allIssues === 0 ? chip('ok', 'Нарушений нет') : chip(errs ? 'err' : 'warn', 'Замечаний: ' + allIssues + ', см. «Итоги по сотрудникам»');
+    $('overallChip').innerHTML = chipsHtml;
+  }
+
+  function renderSummary(r) {
+    var nPeriods = r.items.length;
+    var minV = Math.min.apply(null, r.monthly), maxV = Math.max.apply(null, r.monthly);
+    var sum = r.monthly.reduce(function (a, b) { return a + b; }, 0);
+    $('summary').innerHTML =
+      '<span>Сотрудников: <strong>' + r.emps.length + '</strong></span>' +
+      '<span>Периодов отпуска: <strong>' + nPeriods + '</strong></span>' +
+      '<span>Одновременно в отпуске, максимум: <strong>' + r.peak + '</strong> из допустимых ' + r.maxC + '</span>' +
+      '<span>По месяцам: от <strong>' + minV + '</strong> до <strong>' + maxV + '</strong> чел.-дн., в среднем <strong>' + (sum / 12).toFixed(1) + '</strong></span>';
+  }
+
+  function updateEcoCells(r) {
+    r.emps.forEach(function (E) {
+      var el = $('ecoc-' + E.e.id);
+      if (!el) return;
+      el.textContent = E.eco > 0 ? E.eco + ' дн.' : (E.by == null ? 'нет даты' : '—');
+    });
+  }
+
+  function renderOutputs() {
+    R = compute(state);
+    $('yearTag').textContent = R.year;
+    renderSummary(R);
+    renderGantt(R);
+    renderTables(R);
+    updateEcoCells(R);
+    $('exampleBanner').hidden = !state.example;
+  }
+
+  function renderEmployees() {
+    var h = '';
+    state.employees.forEach(function (e, i) {
+      var id = esc(e.id);
+      h += '<tr><td>' + (i + 1) + '</td>' +
+        '<td><input type="text" data-id="' + id + '" data-f="name" value="' + esc(e.name) + '" aria-label="Сотрудник ' + (i + 1) + '" style="min-width:10rem"></td>' +
+        '<td><input type="date" data-id="' + id + '" data-f="birth" value="' + esc(e.birth) + '" aria-label="Дата рождения" style="min-width:9.5rem"></td>' +
+        '<td><input type="number" min="1" max="120" step="1" data-id="' + id + '" data-f="p1" value="' + esc(e.p1) + '" placeholder="по умолч." aria-label="Часть 1, дней" style="min-width:6.5rem"></td>' +
+        '<td><input type="number" min="0" max="60" step="1" data-id="' + id + '" data-f="eco" value="' + esc(e.eco) + '" placeholder="авто" aria-label="Эко-дни вручную" style="min-width:6.5rem"></td>' +
+        '<td id="ecoc-' + id + '"></td>' +
+        '<td><button type="button" class="x quiet" data-del="' + id + '">Удалить</button></td></tr>';
+    });
+    $('empBody').innerHTML = h;
+  }
+
+  var SET = [
+    ['s-year', 'year', 'n'], ['s-total', 'total', 'n'], ['s-minFirst', 'minFirst', 'n'], ['s-part1', 'part1', 'n'],
+    ['s-maxConc', 'maxConc', 'n'], ['s-ecoBefore', 'ecoBefore', 'n'], ['s-ecoDays', 'ecoDays', 'n'],
+    ['s-ecoInside', 'ecoInside', 'b'], ['s-ecoMode', 'ecoMode', 's'], ['s-holidays', 'holidays', 's']
+  ];
+  function fillSettings() {
+    SET.forEach(function (f) {
+      var el = $(f[0]), v = state.settings[f[1]];
+      el.value = f[2] === 'b' ? (v ? '1' : '0') : (v == null ? '' : v);
+    });
+  }
+
+  function renderAll() {
+    fillSettings();
+    renderEmployees();
+    renderOutputs();
+    $('editable').disabled = readOnly;
+    $('btnCsv').disabled = false;
+  }
+
+  /* ---------- сохранение ---------- */
+  var saveTimer = null, saving = false, dirty = false;
+  function setStatus(kind) {
+    var t = { saving: 'Сохраняю…', db: 'Сохранено', local: 'Сохранено в этом браузере', ro: 'Только просмотр', err: 'Не удалось сохранить' }[kind] || '';
+    $('saveStatus').textContent = t;
+  }
+  function persist() {
+    if (readOnly) return;
+    state.example = false;
+    dirty = true;
+    setStatus('saving');
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(flush, 700);
+  }
+  function flush() {
+    if (saving) { saveTimer = setTimeout(flush, 300); return; }
+    if (!dirty) return;
+    dirty = false; saving = true;
+    var payload = JSON.parse(JSON.stringify(state));
+    var done = function (kind) { saving = false; setStatus(kind); if (dirty) { clearTimeout(saveTimer); saveTimer = setTimeout(flush, 300); } };
+    var toLocal = function () {
+      try { localStorage.setItem(LS_KEY, JSON.stringify(payload)); done('local'); } catch (e) { done('err'); }
+    };
+    if (dbDoc) {
+      dbDoc.set(payload).then(function () { done('db'); }, function () { toLocal(); });
+    } else { toLocal(); }
+  }
+
+  function migrate(d) {
+    var base = defaultState();
+    if (!d || !d.settings || !Array.isArray(d.employees)) return base;
+    d.settings = Object.assign({}, base.settings, d.settings);
+    d.employees = d.employees.map(function (e, i) {
+      return { id: e.id || ('e' + (i + 1)), name: e.name || ('Сотрудник ' + (i + 1)), birth: e.birth || '', p1: e.p1 == null ? '' : e.p1, eco: e.eco == null ? '' : e.eco, manual: e.manual || {} };
+    });
+    d.example = !!d.example;
+    return d;
+  }
+
+  /* ---------- события ---------- */
+  function findEmp(id) { for (var i = 0; i < state.employees.length; i++) if (state.employees[i].id === id) return state.employees[i]; return null; }
+
+  function twoStep(btn, label, action) {
+    if (btn.dataset.armed) { clearTimeout(+btn.dataset.armed); delete btn.dataset.armed; btn.textContent = btn.dataset.orig; action(); return; }
+    btn.dataset.orig = btn.textContent;
+    btn.textContent = label;
+    btn.dataset.armed = String(setTimeout(function () { btn.textContent = btn.dataset.orig; delete btn.dataset.armed; }, 3500));
+  }
+
+  function bind() {
+    SET.forEach(function (f) {
+      $(f[0]).addEventListener('input', function () {
+        var el = $(f[0]), v;
+        if (f[2] === 'n') { v = el.value === '' ? '' : parseFloat(el.value); if (v !== '' && !isFinite(v)) return; }
+        else if (f[2] === 'b') v = el.value === '1';
+        else v = el.value;
+        state.settings[f[1]] = v;
+        persist(); renderOutputs();
+      });
+    });
+
+    $('empBody').addEventListener('input', function (ev) {
+      var t = ev.target; if (!t.dataset || !t.dataset.f) return;
+      var e = findEmp(t.dataset.id); if (!e) return;
+      e[t.dataset.f] = t.value;
+      persist(); renderOutputs();
+    });
+    $('empBody').addEventListener('click', function (ev) {
+      var t = ev.target.closest('button[data-del]'); if (!t) return;
+      twoStep(t, 'Точно?', function () {
+        if (state.employees.length <= 1) return;
+        state.employees = state.employees.filter(function (e) { return e.id !== t.dataset.del; });
+        persist(); renderEmployees(); renderOutputs();
+      });
+    });
+    $('btnAdd').addEventListener('click', function () {
+      if (state.employees.length >= 40) return;
+      var max = 0; state.employees.forEach(function (e) { var n = parseInt(String(e.id).replace(/\D/g, ''), 10); if (n > max) max = n; });
+      state.employees.push({ id: 'e' + (max + 1), name: 'Сотрудник ' + (state.employees.length + 1), birth: '', p1: '', eco: '', manual: {} });
+      persist(); renderEmployees(); renderOutputs();
+    });
+    $('btnClearManual').addEventListener('click', function (ev) {
+      twoStep(ev.currentTarget, 'Точно сбросить?', function () {
+        state.employees.forEach(function (e) { e.manual = {}; });
+        persist(); renderOutputs();
+      });
+    });
+    $('btnReset').addEventListener('click', function (ev) {
+      twoStep(ev.currentTarget, 'Точно вернуть?', function () {
+        state = defaultState(); state.example = true;
+        dirty = true; state.example = true;
+        renderAll();
+        setStatus('saving'); clearTimeout(saveTimer); saveTimer = setTimeout(flush, 400);
+      });
+    });
+
+    $('perBody').addEventListener('change', function (ev) {
+      var t = ev.target; if (!t.classList.contains('mdate')) return;
+      var e = findEmp(t.dataset.id); if (!e) return;
+      e.manual = e.manual || {};
+      e.manual[t.dataset.k] = t.value;
+      persist(); renderOutputs();
+    });
+    $('perBody').addEventListener('click', function (ev) {
+      var t = ev.target.closest('button[data-clear]'); if (!t) return;
+      var e = findEmp(t.dataset.id); if (!e) return;
+      e.manual = e.manual || {};
+      e.manual[t.dataset.k] = '';
+      persist(); renderOutputs();
+    });
+
+    $('btnCsv').addEventListener('click', exportCsv);
+
+    /* подсказки */
+    var tip = $('tip');
+    function showTip(el, x, y) {
+      var html = el.getAttribute('data-tip'); if (!html) return;
+      tip.innerHTML = html; tip.hidden = false;
+      var w = tip.offsetWidth, h = tip.offsetHeight;
+      var nx = Math.min(Math.max(8, x + 12), window.innerWidth - w - 8);
+      var ny = y + 16 + h > window.innerHeight ? y - h - 12 : y + 16;
+      tip.style.left = nx + 'px'; tip.style.top = Math.max(8, ny) + 'px';
+    }
+    var g = $('gantt');
+    g.addEventListener('mousemove', function (ev) {
+      var el = ev.target.closest('[data-tip]');
+      if (el) showTip(el, ev.clientX, ev.clientY); else tip.hidden = true;
+    });
+    g.addEventListener('mouseleave', function () { tip.hidden = true; });
+    g.addEventListener('focusin', function (ev) {
+      var el = ev.target.closest('[data-tip]'); if (!el) return;
+      var b = el.getBoundingClientRect(); showTip(el, b.left, b.bottom);
+    });
+    g.addEventListener('focusout', function () { tip.hidden = true; });
+  }
+
+  function exportCsv() {
+    if (!R) return;
+    var q = function (s) { s = String(s == null ? '' : s); return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+    var rows = [['Сотрудник', 'Год рождения', 'Часть', 'Начало', 'Конец', 'Дней отпуска', 'В т.ч. эко-дней', 'Календарных дней в периоде', 'Праздников в периоде']];
+    R.items.forEach(function (it) {
+      rows.push([it.E.e.name, it.E.by == null ? '' : it.E.by, it.p.label, fmt(it.start), fmt(it.end), it.days, it.p.eco || 0, it.cal, it.hol]);
+    });
+    var text = '﻿' + rows.map(function (r) { return r.map(q).join(';'); }).join('\r\n');
+    if (downloads) {
+      downloads.save({ filename: 'grafik-otpuskov-' + R.year + '.csv', data: text }).then(function () { $('saveStatus').textContent = 'Файл сохранён'; }, function (e) {
+        if (e && e.code === 'declined') return;
+        $('saveStatus').textContent = 'Не удалось скачать файл';
+      });
+    } else {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('aria-label', 'CSV для копирования'); ta.rows = 8;
+      var host = $('perBody').closest('.panel');
+      var old = host.querySelector('textarea.csv'); if (old) old.remove();
+      ta.className = 'csv'; host.appendChild(ta); ta.select();
+      $('saveStatus').textContent = 'Скачивание недоступно, скопируйте текст из поля под таблицей';
+    }
+  }
+
+  /* ---------- запуск ---------- */
+  function loadLocal() {
+    try { var raw = localStorage.getItem(LS_KEY); if (raw) return migrate(JSON.parse(raw)); } catch (e) { /* нет доступа */ }
+    return null;
+  }
+
+  async function init() {
+    bind();
+    renderAll();
+    var cl = window.claude;
+    if (!cl || typeof cl.use !== 'function') { var l0 = loadLocal(); if (l0) { state = l0; renderAll(); } return; }
+    try {
+      downloads = await cl.use('downloads');
+    } catch (e) { downloads = null; }
+    var db = null, user = null;
+    try { db = await cl.use('db'); } catch (e) { db = null; }
+    try { user = await cl.use('user'); } catch (e) { user = null; }
+    if (db) {
+      try {
+        if (user && typeof user.can === 'function') {
+          var cw = await user.can('data.write');
+          if (cw === false) readOnly = true;
+        }
+        dbDoc = db.doc('vacation/plan');
+        var snap = await dbDoc.get();
+        if (snap.exists) { state = migrate(snap.data()); }
+        renderAll();
+        setStatus(readOnly ? 'ro' : '');
+        return;
+      } catch (e) { dbDoc = null; }
+    }
+    var l1 = loadLocal();
+    if (l1) { state = l1; renderAll(); }
+  }
+  init();
+})();
+</script>
+
+</body>
+</html>
